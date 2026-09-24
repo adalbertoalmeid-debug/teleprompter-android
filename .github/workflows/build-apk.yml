@@ -1,5 +1,6 @@
 name: Gerar APK
 
+# O projeto fica na subpasta teleprompter-android; este workflow na raiz aponta para ela.
 on:
   push:
     branches: [ main ]
@@ -8,6 +9,9 @@ on:
 jobs:
   apk:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: teleprompter-android
     steps:
       - uses: actions/checkout@v4
 
@@ -15,12 +19,12 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: teleprompter-android/package-lock.json
 
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
-          cache: gradle
 
       - name: Instalar dependências
         run: npm ci
@@ -40,7 +44,7 @@ jobs:
           echo "TP_KEYSTORE_FILE=$RUNNER_TEMP/teleprompter.keystore" >> "$GITHUB_ENV"
 
       - name: Compilar APK
-        working-directory: android
+        working-directory: teleprompter-android/android
         env:
           TP_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           TP_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
