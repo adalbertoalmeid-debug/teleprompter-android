@@ -1,53 +1,56 @@
 # Teleprompter para Android
 
-Teleprompter para celular Android, feito com [Capacitor](https://capacitorjs.com). Funciona sem internet, no próprio aparelho ou com vidro de teleprompter, e lê os roteiros `.txt` no formato do antigo *Teleprompter Multi Laudas*.
+App de teleprompter feito com Capacitor 8. Lê os mesmos roteiros `.txt` do Teleprompter Multi Laudas 2014 (`//` separa laudas, `>>` destaca a linha, `**` cria espaço).
 
-## Recursos
+## Como gerar o APK (sem instalar Android Studio)
 
-- Roteiros salvos no aparelho, com editor, importação e exportação de `.txt` (inclusive arquivos antigos do Windows).
-- Marcações: `//` separa as laudas, `>>` no início da linha destaca a linha, `**` numa linha sozinha cria um espaço.
-- Leitura de todas as laudas ou de uma só, com salto entre laudas.
-- Espelho horizontal e vertical para vidro de teleprompter.
-- Ajuste de velocidade, tamanho da letra, espaçamento, margem, alinhamento, caixa alta e cores.
-- Setas e linha de referência de leitura, cronômetro e contagem regressiva.
-- Tela cheia e tela sempre acesa durante a leitura.
-- **Botões de volume** controlam a velocidade (ou iniciar e pausar). Também funciona com controle remoto Bluetooth, pedal e teclado (espaço, setas, Page Up/Down, Home, End).
+O GitHub compila o app de graça a cada alteração. Você só precisa fazer isso uma vez:
 
-App irmão, para gravar vídeo com o texto rolando: [Teleprompter Câmera](https://github.com/adalbertoalmeid-debug/teleprompter-camera).
+1. **Crie um repositório privado** no GitHub chamado `teleprompter-android`.
+2. **Envie os arquivos.** Na página do repositório, clique em *uploading an existing file* e arraste para lá **o conteúdo** desta pasta (as pastas `.github`, `android`, `assets`, `www` e os arquivos soltos). Confirme em *Commit changes*.
+   Pelo VS Code também funciona: abra a pasta e use *Publish to GitHub* como repositório privado.
+3. **Cadastre a assinatura.** Em *Settings > Secrets and variables > Actions*, crie os 4 segredos descritos em `assinatura/SEGREDOS-DO-GITHUB.txt` (essa pasta vem no outro .zip e **não** vai para o GitHub).
+4. **Rode a compilação.** Na aba *Actions*, abra *Gerar APK* e clique em *Run workflow*. Leva uns 5 minutos.
+5. **Baixe o APK.** Ao terminar, clique na execução e baixe o arquivo em *Artifacts*. Ele vem num .zip; dentro está o `Teleprompter-1.0.N.apk`.
+
+## Instalar no celular
+
+Passe o `.apk` para o celular (WhatsApp para você mesmo, Google Drive ou cabo) e toque nele. Na primeira vez o Android pede para permitir a instalação de apps daquela origem (Drive, Arquivos, WhatsApp): permita e confirme.
+
+Versões novas instalam por cima e **mantêm os roteiros**, desde que sejam assinadas com a mesma chave da pasta `assinatura`. Guarde essa pasta com cuidado.
+
+## Atualizar o app
+
+Toda a interface está em `www/index.html`. Alterou e enviou para o GitHub, ele gera um APK novo sozinho (a versão sobe a cada compilação).
+
+## O que é nativo no app
+
+- Tela cheia de verdade e tela sempre acesa enquanto o prompter está aberto.
+- **Botões de volume** controlam a velocidade (ou iniciar e pausar, nos ajustes). Fora do prompter eles voltam a mudar o volume normalmente.
+- **Botão voltar** do Android fecha ajustes, prompter e editor, um de cada vez.
+- **Exportar** gera o `.txt` e abre o compartilhar do Android (WhatsApp, Drive, e-mail).
+- Funciona **sem internet**: a fonte vai embutida no app.
 
 ## Estrutura
 
 ```
-www/index.html                     interface completa (HTML, CSS e JS)
-android/.../PrompterPlugin.java    tela acesa e botões de volume
-android/.../MainActivity.java      registra o plugin e intercepta o volume
-.github/workflows/build-apk.yml    compilação automática do APK
-assets/                            ícone e splash (regenere com npm run icons)
+www/index.html            interface completa (HTML, CSS e JS)
+www/capacitor.js          ponte com o Android (vem do @capacitor/core)
+www/fonts/                fonte Atkinson Hyperlegible
+android/.../PrompterPlugin.java   tela acesa + botões de volume
+android/.../MainActivity.java     registra o plugin e intercepta o volume
+.github/workflows/build-apk.yml   compilação automática
+assets/                   ícone e splash (regenere com `npm run icons`)
 ```
 
-## Compile a sua versão
+## Compilar no computador (opcional)
 
-O projeto compila sozinho no GitHub Actions, sem precisar de Android Studio:
+Com Node 22, JDK 21 e Android Studio instalados:
 
-1. Faça um **fork** deste repositório.
-2. Gere a sua própria chave de assinatura (uma vez só):
-   ```
-   keytool -genkeypair -keystore minha.keystore -alias minhachave -keyalg RSA -keysize 2048 -validity 10000
-   ```
-   Depois converta para base64 (no Linux/Mac: `base64 -w0 minha.keystore`; no PowerShell: `[Convert]::ToBase64String([IO.File]::ReadAllBytes("minha.keystore"))`).
-3. Em **Settings > Secrets and variables > Actions**, crie os segredos `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS` e `KEY_PASSWORD`.
-4. Em **Actions > Gerar APK > Run workflow**, rode a compilação. O APK aparece em **Artifacts** ao final.
+```
+npm ci
+npx cap sync android
+npx cap open android
+```
 
-Guarde a sua chave fora do repositório: sem ela, versões novas não instalam por cima da anterior.
-
-Para compilar no computador: Node 22, JDK 21 e Android Studio, com `npm ci`, `npx cap sync android` e `npx cap open android`.
-
-## Licença e créditos
-
-Criado por **Beto Almeida** ([adalbertoalmeida.com.br](https://adalbertoalmeida.com.br)).
-
-Distribuído sob a [Apache License 2.0](LICENSE). Você pode usar, modificar e distribuir, inclusive em projetos comerciais, **desde que dê o crédito**: mantenha os arquivos [`LICENSE`](LICENSE) e [`NOTICE`](NOTICE) em qualquer cópia ou versão derivada e indique que o projeto original é de Beto Almeida.
-
-Uma forma simples de dar o crédito no seu projeto:
-
-> Baseado no [Teleprompter](https://github.com/adalbertoalmeid-debug/teleprompter-android) de Beto Almeida (adalbertoalmeida.com.br), licenciado sob Apache 2.0.
+Para o APK assinado pelo Android Studio, use *Build > Generate Signed App Bundle or APK* com o arquivo `assinatura/teleprompter.keystore`.
