@@ -1,0 +1,11 @@
+Cadastre estes 4 segredos no repositório do GitHub
+(Settings > Secrets and variables > Actions > New repository secret):
+
+KEYSTORE_BASE64   = o conteúdo inteiro do arquivo KEYSTORE_BASE64.txt (uma linha só)
+KEYSTORE_PASSWORD = bjlcpBtjmXh4rhdtcSsy9ELY
+KEY_ALIAS         = teleprompter
+KEY_PASSWORD      = bjlcpBtjmXh4rhdtcSsy9ELY
+
+GUARDE ESTA PASTA EM LUGAR SEGURO E FORA DO GITHUB.
+Sem esse arquivo .keystore e essa senha, versões novas do app não instalam
+por cima da antiga (seria preciso desinstalar e os roteiros salvos no celular se perdem).
