@@ -82,7 +82,7 @@ select{min-height:44px;padding:0 10px;border-radius:10px;border:1px solid var(--
 #prompter{position:fixed;inset:0;z-index:50;background:#000;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
 #flip{position:absolute;inset:0;transform-origin:50% 50%}
 #scroller{position:absolute;left:0;right:0;top:0;will-change:transform}
-#ptext{white-space:pre-wrap;overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto}
+#ptext{white-space:pre-wrap;overflow-wrap:break-word;hyphens:manual;-webkit-hyphens:manual}
 #ptext .ln{display:block;min-height:1em}
 #ptext .hl{display:block}
 #ptext .gap{display:block;height:.55em}
@@ -138,6 +138,21 @@ select{min-height:44px;padding:0 10px;border-radius:10px;border:1px solid var(--
 .dialog .row{justify-content:flex-end}
 
 @media (prefers-reduced-motion: reduce){ .hud,.switch span,.switch span::after{transition:none} }
+/* ---------- Revisão de UX ---------- */
+.hud{flex-direction:column;gap:8px}
+.hudrow{display:flex;gap:8px;align-items:center;justify-content:center}
+.btn.stack{flex-direction:column;gap:0;width:58px;padding:0;font-size:11px;line-height:1.1;font-weight:700}
+.btn.stack svg{width:18px;height:18px}
+.topctl{position:absolute;top:calc(10px + var(--safe-area-inset-top,env(safe-area-inset-top,0px)));left:calc(10px + var(--safe-area-inset-left,env(safe-area-inset-left,0px)));z-index:3;transition:opacity .2s}
+.topctl .btn{min-height:44px;background:rgba(0,0,0,.5);border-color:rgba(255,255,255,.2);color:#fff}
+.topctl.faded{opacity:0;pointer-events:none}
+#clock > span{display:inline-block;padding:2px 10px;border-radius:8px}
+#clock > span:empty{display:none}
+.editfoot{position:sticky;bottom:0;z-index:4;display:flex;gap:10px;align-items:center;width:100%;max-width:760px;margin:0 auto;padding:10px 16px calc(10px + var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px)));background:var(--bg);border-top:1px solid var(--line)}
+.editfoot select{flex:1;min-width:0}
+#sheetWrap{background:rgba(0,0,0,.12)}
+#sheetWrap .sheet{max-height:56dvh;box-shadow:0 -8px 30px rgba(0,0,0,.35)}
+@media (prefers-reduced-motion: reduce){ .topctl{transition:none} }
 </style>
 </head>
 <body>
@@ -180,9 +195,6 @@ select{min-height:44px;padding:0 10px;border-radius:10px;border:1px solid var(--
     <button class="btn icon ghost" id="deleteBtn" aria-label="Excluir roteiro">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13"/></svg>
     </button>
-    <button class="btn primary" id="playBtn">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l12-7.5z"/></svg>Ler
-    </button>
   </div>
   <main>
     <input class="title-input" id="titleInput" placeholder="Nome do roteiro" aria-label="Nome do roteiro">
@@ -193,11 +205,13 @@ select{min-height:44px;padding:0 10px;border-radius:10px;border:1px solid var(--
     </div>
     <textarea id="script" spellcheck="true" placeholder="Digite ou cole o texto aqui."></textarea>
     <div class="stats" id="stats"></div>
-    <div class="row">
-      <label for="laudaSel"><strong>Ler</strong></label>
-      <select id="laudaSel"></select>
-    </div>
   </main>
+  <div class="editfoot">
+    <select id="laudaSel" aria-label="Quais laudas usar"></select>
+    <button class="btn primary" id="playBtn">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l12-7.5z"/></svg>Ler
+    </button>
+  </div>
 </section>
 
 <!-- ============ PROMPTER ============ -->
@@ -210,22 +224,28 @@ select{min-height:44px;padding:0 10px;border-radius:10px;border:1px solid var(--
     <div id="clock"><span id="elapsed">00:00</span><span class="cd" id="countdown"></span></div>
   </div>
 
-  <div class="hud" id="hud">
+  <div class="topctl" id="topctl">
     <button class="btn icon" id="pExit" aria-label="Sair do prompter">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6 6 18"/></svg>
     </button>
+  </div>
+
+  <div class="hud" id="hud">
+   <div class="hudrow">
     <button class="btn icon" id="pRestart" aria-label="Voltar ao início">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 5v14M18 6l-9 6 9 6z"/></svg>
     </button>
-    <button class="btn icon" id="pPrevL" aria-label="Lauda anterior">
+    <button class="btn stack" id="pPrevL" aria-label="Lauda anterior">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 19V5m0 0-6 6m6-6 6 6"/></svg>
-    </button>
+      <span>Lauda</span></button>
     <button class="btn primary" id="pPlay" aria-label="Iniciar">
       <svg viewBox="0 0 24 24" fill="currentColor" id="pPlayIco"><path d="M7 4.5v15l12-7.5z"/></svg><span id="pPlayTxt">Iniciar</span>
     </button>
-    <button class="btn icon" id="pNextL" aria-label="Próxima lauda">
+    <button class="btn stack" id="pNextL" aria-label="Próxima lauda">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14m0 0-6-6m6 6 6-6"/></svg>
-    </button>
+      <span>Lauda</span></button>
+   </div>
+   <div class="hudrow">
     <div class="speed" aria-label="Velocidade">
       <button class="btn icon" id="pSlow" aria-label="Mais devagar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12h14"/></svg>
@@ -241,6 +261,7 @@ select{min-height:44px;padding:0 10px;border-radius:10px;border:1px solid var(--
     <button class="btn icon" id="pSettings" aria-label="Ajustes">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>
     </button>
+   </div>
   </div>
 
   <div class="mini hidden" id="mini">
@@ -373,6 +394,7 @@ if(!Array.isArray(scripts)){
 }
 function persistScripts(){ if(!save(KEY_SCRIPTS, scripts)) toast("Não foi possível salvar: o armazenamento do navegador está cheio ou bloqueado."); }
 function persistSettings(){ save(KEY_SETTINGS, S); }
+function rgba(hex, a){ hex = (hex || "#000000").replace("#",""); if(hex.length === 3) hex = hex.split("").map(c => c + c).join(""); const n = parseInt(hex, 16) || 0; return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`; }
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
 
 /* ================= Helpers ================= */
@@ -573,7 +595,8 @@ function applyStyle(){
   $("mkL").style.color = $("mkR").style.color = S.cRef;
   $("mkL").classList.toggle("hidden", !S.markers); $("mkR").classList.toggle("hidden", !S.markers);
   $("readline").style.borderColor = S.cRef; $("readline").classList.toggle("hidden", !S.readLine);
-  $("clock").style.color = S.cClock; $("clock").classList.toggle("hidden", !S.clock);
+  $("clock").style.color = S.cClock;
+  $("clock").querySelectorAll(":scope > span").forEach(e => e.style.background = rgba(S.cBg, .8)); $("clock").classList.toggle("hidden", !S.clock);
   flip.style.transform = `scale(${S.mirrorH ? -1 : 1}, ${S.mirrorV ? -1 : 1})`;
   $("pMirror").setAttribute("aria-pressed", String(S.mirrorH));
   $("pMirror").style.background = S.mirrorH ? "rgba(255,255,255,.3)" : "";
@@ -591,6 +614,7 @@ function measure(){
   // o fim é quando a última linha chega na linha de leitura
   P.max = Math.max(0, contentH - Math.round(S.font * S.line * 0.5));
   P.laudaTops = Array.from(ptext.querySelectorAll("section.ls")).map(s => s.offsetTop - P.readY);
+  $("pPrevL").classList.toggle("hidden", P.laudaTops.length < 2); $("pNextL").classList.toggle("hidden", P.laudaTops.length < 2);
   P.offset = Math.min(P.offset, P.max);
   paint();
 }
@@ -618,6 +642,7 @@ function setPlaying(on){
   $("pPlay").setAttribute("aria-label", on ? "Pausar" : "Iniciar");
   $("pPlayIco").innerHTML = on ? '<path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/>' : '<path d="M7 4.5v15l12-7.5z"/>';
   $("hud").classList.toggle("faded", on);
+  $("topctl").classList.toggle("faded", on);
   $("mini").classList.toggle("hidden", !on);
 }
 function resetTop(resetClock){ P.offset = 0; if(resetClock) P.elapsed = 0; paint(); setPlaying(false); }
@@ -635,7 +660,7 @@ function jumpLauda(dir){
 
 /* Toque e arraste na área do texto */
 stage.addEventListener("pointerdown", e => {
-  if(e.target.closest(".hud,.mini")) return;
+  if(e.target.closest(".topctl,.hud,.mini")) return;
   P.drag = { y: e.clientY, startY: e.clientY, t: performance.now(), moved: false, id: e.pointerId };
   try{ stage.setPointerCapture(e.pointerId); }catch(_){}
 });
